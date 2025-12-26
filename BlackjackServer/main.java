@@ -5,20 +5,9 @@ import java.util.concurrent.*;
 
 public class main {
     private static final int PORT = 12345;
-    private static Map<String, GameRoom> rooms = new ConcurrentHashMap<>();
+    private static Map<String, GameRoom> rooms = new ConcurrentHashMap<>()
 
-    public static void main(String[] args) {
-        System.out.println("=== Blackjack Server (PVP 莊家消極懲罰版) Port: " + PORT + " ===");
-        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            while (true) {
-                Socket socket = serverSocket.accept();
-                ClientHandler client = new ClientHandler(socket);
-                new Thread(client).start();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
 
     // --- ClientHandler ---
     static class ClientHandler implements Runnable {
