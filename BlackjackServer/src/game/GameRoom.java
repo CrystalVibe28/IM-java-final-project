@@ -14,6 +14,8 @@ public class GameRoom {
     private boolean gameInProgress = false;
     private boolean functionCardPhase = false; // 是否在機會卡階段
     private int functionCardTurnIndex = 0; // 機會卡階段當前輪到的玩家
+    private boolean pendingVictory = false; // 是否有待發送的勝利訊息
+    private String pendingWinnerName = null; // 待發送勝利訊息的贏家名稱（null 表示平局）
 
     public GameRoom(ClientHandler creator, String roomId) {
         this.roomId = roomId;
@@ -307,7 +309,12 @@ public class GameRoom {
         }
 
         if (allReady && players.size() > 1) {
-            broadcast(Protocol.MSG + Protocol.DELIMITER + "所有玩家已確認完畢，莊家可開始下一局");
+            // 檢查是否有待發送的勝利訊息
+            if (pendingVictory) {
+                handlePendingVictory();
+            } else {
+                broadcast(Protocol.MSG + Protocol.DELIMITER + "所有玩家已確認完畢，莊家可開始下一局");
+            }
         }
     }
 
@@ -603,18 +610,26 @@ public class GameRoom {
             }
 
             int pScore = p.getHand().bestValue();
+            boolean pBust = p.getHand().isBust();
 
-            if (p.getHand().isBust()) {
+            if (pBust) {
+                // 閒家爆牌：無論莊家如何都是閒家輸
                 dealerWinCount++;
                 p.decreaseHp(1);
                 sb.append(p.getName()).append(" 爆牌 (-1 HP)\\n");
-            } else if (!dBust && pScore < dScore) {
+            } else if (dBust) {
+                // 莊家爆牌且閒家沒爆：閒家贏
+                sb.append(p.getName()).append(" 贏莊家（莊家爆牌）\\n");
+            } else if (pScore > dScore) {
+                // 雙方都沒爆，閒家點數大：閒家贏
+                sb.append(p.getName()).append(" 贏莊家\\n");
+            } else if (pScore < dScore) {
+                // 雙方都沒爆，閒家點數小：閒家輸
                 dealerWinCount++;
                 p.decreaseHp(1);
                 sb.append(p.getName()).append(" 輸莊家 (-1 HP)\\n");
-            } else if (!dBust && pScore > dScore) {
-                sb.append(p.getName()).append(" 贏莊家\\n");
             } else {
+                // 雙方都沒爆，點數相同：平手
                 sb.append(p.getName()).append(" 平手\\n");
             }
         }
@@ -655,39 +670,18 @@ public class GameRoom {
         gameInProgress = false;
 
         if (activeCount == 1) {
-            // 只剩一名玩家獲勝
+            // 只剩一名玩家獲勝 - 標記待發送勝利訊息
             PlayerInfo winner = players.stream().filter(p -> !p.isSpectator()).findFirst().orElse(null);
             if (winner != null) {
-                broadcast(Protocol.GAME_WIN + Protocol.DELIMITER + winner.getName());
-                broadcast(Protocol.MSG + Protocol.DELIMITER + "🎉 遊戲結束！" + winner.getName() + " 獲得勝利！");
-
-                // 重置所有玩家狀態，準備新遊戲
-                for (PlayerInfo p : players) {
-                    p.setSpectator(false);
-                    p.setHp(15);
-                    p.setReady(true);
-                    p.clearFunctionCards(); // 清空功能牌，下一局重發
-                }
-
-                dealerIndex = 0;
-                players.get(0).setDealer(true);
-                broadcast(Protocol.HP_UPDATE + Protocol.DELIMITER + getHpString());
-                broadcast(Protocol.MSG + Protocol.DELIMITER + "所有玩家 HP 已重置，等待莊家開始新一局...");
+                pendingVictory = true;
+                pendingWinnerName = winner.getName();
+                broadcast(Protocol.MSG + Protocol.DELIMITER + "請所有玩家確認回合結果...");
             }
         } else if (activeCount == 0) {
-            // 極端情況：所有人同時歸零（平局）
-            broadcast(Protocol.MSG + Protocol.DELIMITER + "所有玩家同時被淘汰，平局！HP 已重置。");
-            for (PlayerInfo p : players) {
-                p.setSpectator(false);
-                p.setHp(15);
-                p.setReady(true);
-                p.clearFunctionCards();
-            }
-            dealerIndex = 0;
-            if (!players.isEmpty()) {
-                players.get(0).setDealer(true);
-            }
-            broadcast(Protocol.HP_UPDATE + Protocol.DELIMITER + getHpString());
+            // 極端情況：所有人同時歸零（平局）- 標記待發送平局訊息
+            pendingVictory = true;
+            pendingWinnerName = null; // null 表示平局
+            broadcast(Protocol.MSG + Protocol.DELIMITER + "請所有玩家確認回合結果...");
         } else if (activeCount > 1) {
             // 還有多名玩家存活，正常輪換莊家
             // 找到下一個非旁觀者作為莊家
@@ -706,6 +700,40 @@ public class GameRoom {
             broadcast(Protocol.HP_UPDATE + Protocol.DELIMITER + getHpString());
             broadcast(Protocol.MSG + Protocol.DELIMITER + "請所有玩家確認結算視窗，以進行下一局...");
         }
+    }
+
+    /**
+     * 處理待發送的勝利訊息（在所有玩家確認回合結果後調用）
+     */
+    private void handlePendingVictory() {
+        if (pendingWinnerName != null) {
+            // 有贏家
+            broadcast(Protocol.GAME_WIN + Protocol.DELIMITER + pendingWinnerName);
+            broadcast(Protocol.MSG + Protocol.DELIMITER + "🎉 遊戲結束！" + pendingWinnerName + " 獲得勝利！");
+        } else {
+            // 平局
+            broadcast(Protocol.MSG + Protocol.DELIMITER + "所有玩家同時被淘汰，平局！HP 已重置。");
+        }
+
+        // 重置所有玩家狀態，準備新遊戲
+        for (PlayerInfo p : players) {
+            p.setSpectator(false);
+            p.setHp(15);
+            p.setReady(true);
+            p.clearFunctionCards();
+        }
+
+        dealerIndex = 0;
+        if (!players.isEmpty()) {
+            players.get(0).setDealer(true);
+        }
+
+        broadcast(Protocol.HP_UPDATE + Protocol.DELIMITER + getHpString());
+        broadcast(Protocol.MSG + Protocol.DELIMITER + "所有玩家 HP 已重置，等待莊家開始新一局...");
+
+        // 清除待發送標記
+        pendingVictory = false;
+        pendingWinnerName = null;
     }
 
     // ==================== 廣播與工具 ====================
