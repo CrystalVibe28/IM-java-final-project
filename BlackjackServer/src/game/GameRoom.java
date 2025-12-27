@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 遊戲房間類別 - 管理遊戲流程
@@ -8,16 +7,14 @@ import java.util.Map;
 public class GameRoom {
     private final String roomId;
     private final List<PlayerInfo> players = new ArrayList<>();
-    private final Map<String, GameRoom> roomRegistry;
 
     private Deck deck;
     private int dealerIndex = 0;
     private int turnIndex = 0;
     private boolean gameInProgress = false;
 
-    public GameRoom(ClientHandler creator, String roomId, Map<String, GameRoom> roomRegistry) {
+    public GameRoom(ClientHandler creator, String roomId) {
         this.roomId = roomId;
-        this.roomRegistry = roomRegistry;
         addPlayer(creator);
     }
 

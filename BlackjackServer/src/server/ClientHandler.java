@@ -8,7 +8,7 @@ import java.util.Map;
 public class ClientHandler implements Runnable {
     private final Socket socket;
     private final Map<String, GameRoom> rooms;
-    
+
     private PrintWriter out;
     private BufferedReader in;
     private String uid;
@@ -23,7 +23,7 @@ public class ClientHandler implements Runnable {
     public String getName() {
         return name;
     }
-    
+
     public String getUid() {
         return uid;
     }
@@ -33,7 +33,7 @@ public class ClientHandler implements Runnable {
         try {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            
+
             String input;
             while ((input = in.readLine()) != null) {
                 processCommand(input);
@@ -65,46 +65,46 @@ public class ClientHandler implements Runnable {
                 System.out.println("玩家登入 - Name: " + name + ", UID: " + uid);
                 send(Protocol.LOGIN_OK);
                 break;
-                
+
             case Protocol.PVE_START:
                 startPVE();
                 break;
-                
+
             case Protocol.CREATE_ROOM:
                 createRoom();
                 break;
-                
+
             case Protocol.JOIN_ROOM:
                 if (parts.length > 1) {
                     joinRoom(parts[1]);
                 }
                 break;
-                
+
             case Protocol.START:
                 if (currentRoom != null) {
                     currentRoom.tryStartGame(this);
                 }
                 break;
-                
+
             case Protocol.READY:
                 if (currentRoom != null) {
                     currentRoom.handlePlayerReady(this);
                 }
                 break;
-                
+
             case Protocol.CHAT:
                 if (currentRoom != null && parts.length > 1) {
                     currentRoom.broadcastChat(name, parts[1]);
                 }
                 break;
-                
+
             case Protocol.HIT:
             case Protocol.STAND:
                 if (currentRoom != null) {
                     currentRoom.handleGameAction(this, action);
                 }
                 break;
-                
+
             case Protocol.LEAVE:
                 leaveRoom();
                 break;
@@ -113,14 +113,14 @@ public class ClientHandler implements Runnable {
 
     private void startPVE() {
         send(Protocol.PVE_STARTED);
-        GameRoom room = new GameRoom(this, null, rooms);
+        GameRoom room = new GameRoom(this, null);
         this.currentRoom = room;
         room.startGame();
     }
 
     private void createRoom() {
         String roomId = generateRoomId();
-        GameRoom room = new GameRoom(this, roomId, rooms);
+        GameRoom room = new GameRoom(this, roomId);
         rooms.put(roomId, room);
         this.currentRoom = room;
         send(Protocol.ROOM_CREATED + Protocol.DELIMITER + roomId);
