@@ -55,11 +55,14 @@ public class MessageHandler {
                         client.getGamePanel().updatePlayerList(parts[4], client.getPlayerName());
                     }
                     client.getGamePanel().getStartGameButton().setVisible(false);
+                    // 遊戲進行中禁用功能牌
+                    client.getGamePanel().setFunctionCardsEnabled(false);
                     break;
 
                 case Protocol.TURN:
                     if ("YOUR".equals(parts[1])) {
-                        client.getGamePanel().getStatusLabel().setText("輪到你了！ (目前點數: " + client.getGamePanel().getPlayerScoreStr() + ")");
+                        client.getGamePanel().getStatusLabel()
+                                .setText("輪到你了！ (目前點數: " + client.getGamePanel().getPlayerScoreStr() + ")");
                         client.getGamePanel().getStatusLabel().setForeground(Color.GREEN);
                         client.getGamePanel().unlockButtons();
                     } else {
@@ -67,6 +70,8 @@ public class MessageHandler {
                         client.getGamePanel().getStatusLabel().setForeground(Color.YELLOW);
                         client.getGamePanel().lockButtons();
                     }
+                    // 遊戲進行中禁用功能牌
+                    client.getGamePanel().setFunctionCardsEnabled(false);
                     break;
 
                 case Protocol.GAME_OVER:
@@ -78,6 +83,8 @@ public class MessageHandler {
                     client.getGamePanel().getStatusLabel().setForeground(Color.WHITE);
                     client.getGamePanel().lockButtons();
                     client.checkStartButtonVisibility();
+                    // 回合結束，允許使用功能牌
+                    client.getGamePanel().setFunctionCardsEnabled(true);
                     break;
 
                 case Protocol.HP_UPDATE:
@@ -100,6 +107,21 @@ public class MessageHandler {
                 case Protocol.LOBBY:
                     client.setPveMode(false);
                     client.showPanel("LOBBY");
+                    client.getGamePanel().clearFunctionCards();
+                    break;
+
+                case Protocol.FUNCTION_CARDS:
+                    // 更新功能牌 UI
+                    client.updateFunctionCards(parts.length > 1 ? parts[1] : "");
+                    break;
+
+                case Protocol.FUNCTION_CARD_USED:
+                    // 功能牌使用通知（已在聊天室透過 MSG 顯示，此處可做額外處理）
+                    if (parts.length >= 4) {
+                        JTextArea chatArea = client.getGamePanel().getChatArea();
+                        chatArea.append("[機會卡] " + parts[1] + " 使用了「" + parts[2] + "」對 " + parts[3] + "\n");
+                        chatArea.setCaretPosition(chatArea.getDocument().getLength());
+                    }
                     break;
 
                 case Protocol.ERROR:

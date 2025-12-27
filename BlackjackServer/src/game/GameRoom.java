@@ -58,9 +58,16 @@ public class GameRoom {
                 players.add(newPlayer);
                 broadcast(Protocol.MSG + Protocol.DELIMITER + "玩家 " + handler.getName() + " 加入 (" + players.size()
                         + "/5)");
+                // 給新加入的玩家發功能牌（如果房間已經有玩家有功能牌，表示不是第一局）
+                if (roomId != null && players.size() > 1 && !players.get(0).getFunctionCards().isEmpty()) {
+                    dealFunctionCardsToPlayer(newPlayer);
+                    sendFunctionCardsTo(newPlayer);
+                }
             }
 
             broadcast(Protocol.HP_UPDATE + Protocol.DELIMITER + getHpString());
+            // 在玩家加入時發送功能牌狀態
+            sendFunctionCardsToAll();
         }
     }
 
@@ -187,6 +194,12 @@ public class GameRoom {
             p.setDealer(i == dealerIndex);
             p.getHand().add(deck.draw());
             p.getHand().add(deck.draw());
+        }
+
+        // 發放功能牌（如果是第一局，玩家還沒有功能牌）
+        boolean firstGame = players.stream().allMatch(p -> p.getFunctionCards().isEmpty());
+        if (firstGame) {
+            dealFunctionCards();
         }
 
         broadcast(Protocol.MSG + Protocol.DELIMITER + "=== 新局開始，莊家是 " + players.get(dealerIndex).getName() + " ===");
@@ -546,5 +559,127 @@ public class GameRoom {
                         + dHand + Protocol.DELIMITER + mHand + Protocol.DELIMITER + listData);
             }
         }
+    }
+
+    // ==================== 功能牌管理 ====================
+
+    /**
+     * 給所有玩家發放功能牌（第一局開始時）
+     */
+    private void dealFunctionCards() {
+        // PVE 模式不發功能牌
+        if (roomId == null)
+            return;
+
+        for (PlayerInfo p : players) {
+            if (p.isSpectator())
+                continue;
+            dealFunctionCardsToPlayer(p);
+        }
+        sendFunctionCardsToAll();
+        broadcast(Protocol.MSG + Protocol.DELIMITER + "已發放 3 張機會卡，可在回合開始前使用");
+    }
+
+    /**
+     * 給單一玩家發功能牌
+     */
+    private void dealFunctionCardsToPlayer(PlayerInfo player) {
+        // 發 3 張功能牌
+        for (int i = 0; i < 3; i++) {
+            // 目前只有一種功能牌，未來可以隨機或從牌堆抽
+            player.addFunctionCard(new FunctionCard(FunctionCardType.MAKE_A_DEAL));
+        }
+    }
+
+    /**
+     * 發送功能牌狀態給所有玩家
+     */
+    private void sendFunctionCardsToAll() {
+        for (PlayerInfo p : players) {
+            sendFunctionCardsTo(p);
+        }
+    }
+
+    /**
+     * 發送功能牌狀態給指定玩家
+     */
+    private void sendFunctionCardsTo(PlayerInfo player) {
+        String cardsData = player.getFunctionCardsProtocol();
+        player.send(Protocol.FUNCTION_CARDS + Protocol.DELIMITER + cardsData);
+    }
+
+    /**
+     * 處理功能牌使用請求
+     */
+    public void handleUseFunctionCard(ClientHandler handler, int cardId, String targetUid) {
+        // 遊戲進行中不能使用功能牌
+        if (gameInProgress) {
+            handler.send(Protocol.ERROR + Protocol.DELIMITER + "只能在回合開始前使用機會卡");
+            return;
+        }
+
+        // 找到使用者
+        PlayerInfo user = null;
+        for (PlayerInfo p : players) {
+            if (p.getHandler() == handler) {
+                user = p;
+                break;
+            }
+        }
+
+        if (user == null || user.isSpectator()) {
+            handler.send(Protocol.ERROR + Protocol.DELIMITER + "無法使用機會卡");
+            return;
+        }
+
+        // 移除功能牌
+        FunctionCard card = user.removeFunctionCard(cardId);
+        if (card == null) {
+            handler.send(Protocol.ERROR + Protocol.DELIMITER + "找不到指定的機會卡");
+            return;
+        }
+
+        // 根據功能牌類型執行效果
+        switch (card.getType()) {
+            case MAKE_A_DEAL:
+                executeMakeADeal(user, targetUid);
+                break;
+            // 未來可以在此擴充更多功能牌類型
+        }
+
+        // 更新功能牌狀態
+        sendFunctionCardsToAll();
+    }
+
+    /**
+     * 執行「做個交易」效果：與目標玩家互換手牌
+     */
+    private void executeMakeADeal(PlayerInfo user, String targetUid) {
+        // 找到目標玩家（支援 UID 或名稱匹配）
+        PlayerInfo target = null;
+        for (PlayerInfo p : players) {
+            if (p != user && (p.getUid().equals(targetUid) || p.getName().equals(targetUid))) {
+                target = p;
+                break;
+            }
+        }
+
+        if (target == null || target.isSpectator()) {
+            user.send(Protocol.ERROR + Protocol.DELIMITER + "無效的目標玩家");
+            return;
+        }
+
+        // 交換手牌
+        Hand tempHand = user.getHand();
+        user.setHand(target.getHand());
+        target.setHand(tempHand);
+
+        // 廣播通知
+        broadcast(Protocol.FUNCTION_CARD_USED + Protocol.DELIMITER
+                + user.getName() + Protocol.DELIMITER
+                + "做個交易" + Protocol.DELIMITER
+                + target.getName());
+        broadcast(Protocol.MSG + Protocol.DELIMITER
+                + user.getName() + " 使用了「做個交易」與 " + target.getName() + " 互換手牌！");
     }
 }

@@ -2,10 +2,11 @@
  * 通訊協定常數
  */
 public final class Protocol {
-    private Protocol() {} // 禁止實例化
+    private Protocol() {
+    } // 禁止實例化
 
     // === Client -> Server ===
-    public static final String LOGIN = "LOGIN";              // LOGIN|uid|name
+    public static final String LOGIN = "LOGIN"; // LOGIN|uid|name
     public static final String PVE_START = "PVE_START";
     public static final String CREATE_ROOM = "CREATE_ROOM";
     public static final String JOIN_ROOM = "JOIN_ROOM";
@@ -28,6 +29,12 @@ public final class Protocol {
     public static final String MSG = "MSG";
     public static final String LOBBY = "LOBBY";
     public static final String ERROR = "ERROR";
+
+    // === 功能牌相關 ===
+    public static final String USE_FUNCTION_CARD = "USE_FUNC_CARD"; // Client: USE_FUNC_CARD|cardId|targetUid
+    public static final String FUNCTION_CARDS = "FUNC_CARDS"; // Server: FUNC_CARDS|id,type;id,type;...
+    public static final String FUNCTION_CARD_USED = "FUNC_CARD_USED"; // Server:
+                                                                      // FUNC_CARD_USED|userName|cardType|targetName
 
     // === 協定分隔符號 ===
     public static final String DELIMITER = "|";

@@ -19,6 +19,7 @@ public class GamePanel extends JPanel {
     private final JButton hitButton;
     private final JButton standButton;
     private final JButton leaveButton;
+    private final JPanel functionCardArea; // 功能牌區域
 
     // 狀態
     private String dealerTitleBase = "莊家區";
@@ -57,6 +58,9 @@ public class GamePanel extends JPanel {
         // 玩家列表與聊天區
         JPanel infoSplit = new JPanel(new GridLayout(1, 2));
 
+        // 左側：玩家列表 + 功能牌區
+        JPanel leftPanel = new JPanel(new BorderLayout());
+
         playerListArea = new JTextArea();
         playerListArea.setEditable(false);
         playerListArea.setFont(new Font("Monospaced", Font.BOLD, 14));
@@ -65,6 +69,15 @@ public class GamePanel extends JPanel {
         JScrollPane listScroll = new JScrollPane(playerListArea);
         listScroll.setBorder(createTitledBorder("存活玩家"));
 
+        // 功能牌區域
+        functionCardArea = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        functionCardArea.setBackground(new Color(40, 40, 60));
+        functionCardArea.setBorder(createTitledBorder("機會卡"));
+        functionCardArea.setPreferredSize(new Dimension(0, 120));
+
+        leftPanel.add(listScroll, BorderLayout.CENTER);
+        leftPanel.add(functionCardArea, BorderLayout.SOUTH);
+
         chatArea = new JTextArea();
         chatArea.setEditable(false);
         chatArea.setBackground(Color.BLACK);
@@ -72,7 +85,7 @@ public class GamePanel extends JPanel {
         JScrollPane chatScroll = new JScrollPane(chatArea);
         chatScroll.setBorder(createTitledBorder("聊天室"));
 
-        infoSplit.add(listScroll);
+        infoSplit.add(leftPanel);
         infoSplit.add(chatScroll);
 
         // 聊天輸入
@@ -121,18 +134,53 @@ public class GamePanel extends JPanel {
 
     // ==================== Getters ====================
 
-    public JPanel getDealerPanel() { return dealerPanel; }
-    public JPanel getPlayerPanel() { return playerPanel; }
-    public JLabel getStatusLabel() { return statusLabel; }
-    public JLabel getRoomIdLabel() { return roomIdLabel; }
-    public JTextArea getPlayerListArea() { return playerListArea; }
-    public JTextArea getChatArea() { return chatArea; }
-    public JTextField getChatInput() { return chatInput; }
-    public JButton getSendChatButton() { return sendChatButton; }
-    public JButton getStartGameButton() { return startGameButton; }
-    public JButton getHitButton() { return hitButton; }
-    public JButton getStandButton() { return standButton; }
-    public JButton getLeaveButton() { return leaveButton; }
+    public JPanel getDealerPanel() {
+        return dealerPanel;
+    }
+
+    public JPanel getPlayerPanel() {
+        return playerPanel;
+    }
+
+    public JLabel getStatusLabel() {
+        return statusLabel;
+    }
+
+    public JLabel getRoomIdLabel() {
+        return roomIdLabel;
+    }
+
+    public JTextArea getPlayerListArea() {
+        return playerListArea;
+    }
+
+    public JTextArea getChatArea() {
+        return chatArea;
+    }
+
+    public JTextField getChatInput() {
+        return chatInput;
+    }
+
+    public JButton getSendChatButton() {
+        return sendChatButton;
+    }
+
+    public JButton getStartGameButton() {
+        return startGameButton;
+    }
+
+    public JButton getHitButton() {
+        return hitButton;
+    }
+
+    public JButton getStandButton() {
+        return standButton;
+    }
+
+    public JButton getLeaveButton() {
+        return leaveButton;
+    }
 
     // ==================== UI 更新方法 ====================
 
@@ -209,12 +257,14 @@ public class GamePanel extends JPanel {
     }
 
     private String calcScore(String hand) {
-        if (hand.contains("HIDDEN")) return "?";
-        
+        if (hand.contains("HIDDEN"))
+            return "?";
+
         int sum = 0;
         int aces = 0;
         for (String c : hand.split(";")) {
-            if (c.isEmpty()) continue;
+            if (c.isEmpty())
+                continue;
             String rank = c.split(",")[0];
             if ("JQK".contains(rank)) {
                 sum += 10;
@@ -241,12 +291,37 @@ public class GamePanel extends JPanel {
 
     private TitledBorder createTitledBorder(String title) {
         return BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(Color.WHITE),
-            title,
-            TitledBorder.DEFAULT_JUSTIFICATION,
-            TitledBorder.DEFAULT_POSITION,
-            new Font("微軟正黑體", Font.BOLD, 16),
-            Color.WHITE
-        );
+                BorderFactory.createLineBorder(Color.WHITE),
+                title,
+                TitledBorder.DEFAULT_JUSTIFICATION,
+                TitledBorder.DEFAULT_POSITION,
+                new Font("微軟正黑體", Font.BOLD, 16),
+                Color.WHITE);
+    }
+
+    // ==================== 功能牌管理 ====================
+
+    public JPanel getFunctionCardArea() {
+        return functionCardArea;
+    }
+
+    /**
+     * 清空功能牌區域
+     */
+    public void clearFunctionCards() {
+        functionCardArea.removeAll();
+        functionCardArea.revalidate();
+        functionCardArea.repaint();
+    }
+
+    /**
+     * 設定所有功能牌按鈕是否可用
+     */
+    public void setFunctionCardsEnabled(boolean enabled) {
+        for (Component comp : functionCardArea.getComponents()) {
+            if (comp instanceof FunctionCardPanel) {
+                ((FunctionCardPanel) comp).setEnabled(enabled);
+            }
+        }
     }
 }

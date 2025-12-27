@@ -110,6 +110,18 @@ public class ClientHandler implements Runnable {
                 }
                 break;
 
+            case Protocol.USE_FUNCTION_CARD:
+                if (currentRoom != null && parts.length > 2) {
+                    try {
+                        int cardId = Integer.parseInt(parts[1]);
+                        String targetUid = parts[2];
+                        currentRoom.handleUseFunctionCard(this, cardId, targetUid);
+                    } catch (NumberFormatException e) {
+                        send(Protocol.ERROR + Protocol.DELIMITER + "無效的功能牌 ID");
+                    }
+                }
+                break;
+
             case Protocol.LEAVE:
                 leaveRoom();
                 break;

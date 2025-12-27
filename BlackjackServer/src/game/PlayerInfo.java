@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 玩家資訊類別 - 封裝玩家狀態
  */
@@ -9,6 +12,7 @@ public class PlayerInfo {
     private boolean hasStayed;
     private boolean isReady;
     private boolean isSpectator;
+    private List<FunctionCard> functionCards = new ArrayList<>();
 
     public PlayerInfo(ClientHandler handler) {
         this.handler = handler;
@@ -26,6 +30,10 @@ public class PlayerInfo {
 
     public Hand getHand() {
         return hand;
+    }
+
+    public void setHand(Hand hand) {
+        this.hand = hand;
     }
 
     public int getHp() {
@@ -107,5 +115,53 @@ public class PlayerInfo {
         if (handler != null) {
             handler.send(message);
         }
+    }
+
+    // ==================== 功能牌管理 ====================
+
+    /**
+     * 取得功能牌列表
+     */
+    public List<FunctionCard> getFunctionCards() {
+        return functionCards;
+    }
+
+    /**
+     * 新增功能牌
+     */
+    public void addFunctionCard(FunctionCard card) {
+        functionCards.add(card);
+    }
+
+    /**
+     * 移除指定 ID 的功能牌
+     */
+    public FunctionCard removeFunctionCard(int cardId) {
+        for (int i = 0; i < functionCards.size(); i++) {
+            if (functionCards.get(i).getId() == cardId) {
+                return functionCards.remove(i);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 清空功能牌
+     */
+    public void clearFunctionCards() {
+        functionCards.clear();
+    }
+
+    /**
+     * 功能牌列表轉協定字串
+     */
+    public String getFunctionCardsProtocol() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < functionCards.size(); i++) {
+            if (i > 0)
+                sb.append(";");
+            sb.append(functionCards.get(i).toProtocol());
+        }
+        return sb.toString();
     }
 }

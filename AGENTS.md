@@ -65,12 +65,15 @@ java -cp out Main
 - `HIT` / `STAND` - 遊戲行動
 - `CHAT|message` - 聊天
 - `LEAVE` - 離開房間
+- `USE_FUNC_CARD|cardId|targetUid` - 使用功能牌
 
 **Server → Client:**
 - `LOGIN_OK` - 登入成功
 - `STATE|status|dealerHand|playerHand|playerList` - 遊戲狀態
 - `TURN|YOUR/WAIT` - 輪次通知
 - `GAME_OVER|dealerHand|playerHand|result` - 回合結束
+- `FUNC_CARDS|id,type;id,type;...` - 功能牌列表
+- `FUNC_CARD_USED|userName|cardType|targetName` - 功能牌使用通知
 
 ## 程式碼慣例
 
@@ -87,6 +90,14 @@ java -cp out Main
 - 莊家爆牌：-2 HP
 - 莊家消極懲罰（不拿牌且未獲勝）：-1 HP
 - HP 歸零則淘汰
+
+### 功能牌（機會卡）
+
+- **發牌時機**：第一局遊戲開始時，每位玩家獲得 3 張功能牌
+- **使用時機**：只能在回合開始前使用（莊家點擊「開始遊戲」前）
+- **PVE 模式**：不發放功能牌
+- **目前功能牌**：
+  - **做個交易**：與一位玩家互換手牌
 
 ### 旁觀者模式
 
