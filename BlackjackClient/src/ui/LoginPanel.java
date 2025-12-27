@@ -1,5 +1,4 @@
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 /**
@@ -14,7 +13,7 @@ public class LoginPanel extends JPanel {
     public LoginPanel() {
         setLayout(new GridBagLayout());
         setBackground(new Color(40, 40, 40));
-        
+
         // 載入本地配置
         userConfig = new UserConfig();
 
@@ -25,7 +24,7 @@ public class LoginPanel extends JPanel {
         nameField = new JTextField(15);
         ipField = new JTextField(15);
         loginButton = new JButton("連線並進入遊戲");
-        
+
         // 自動填入上次使用的配置
         nameField.setText(userConfig.getName());
         ipField.setText(userConfig.getServerIp());
@@ -61,11 +60,11 @@ public class LoginPanel extends JPanel {
     public JButton getLoginButton() {
         return loginButton;
     }
-    
+
     public String getUid() {
         return userConfig.getUid();
     }
-    
+
     public void saveCurrentConfig() {
         userConfig.setName(getPlayerName());
         userConfig.setServerIp(getIp());
