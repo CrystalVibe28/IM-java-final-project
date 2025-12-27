@@ -144,6 +144,18 @@ public class GameRoom {
         }
 
         if (players.get(dealerIndex).getHandler() == requestor) {
+            // 檢查玩家人數（至少需要 2 人才能開始 PVP）
+            int activePlayerCount = 0;
+            for (PlayerInfo p : players) {
+                if (!p.isSpectator()) {
+                    activePlayerCount++;
+                }
+            }
+            if (activePlayerCount < 2) {
+                requestor.send(Protocol.ERROR + Protocol.DELIMITER + "至少需要 2 位玩家才能開始遊戲");
+                return;
+            }
+
             List<String> notReadyList = new ArrayList<>();
             for (PlayerInfo p : players) {
                 // 旁觀者不需要確認 ready
@@ -165,8 +177,8 @@ public class GameRoom {
     }
 
     public void startGame() {
-        if (roomId != null && players.size() < 1) {
-            broadcast(Protocol.MSG + Protocol.DELIMITER + "至少需要 1 人才能開始");
+        if (roomId != null && players.size() < 2) {
+            broadcast(Protocol.MSG + Protocol.DELIMITER + "至少需要 2 位玩家才能開始");
             return;
         }
 
