@@ -641,7 +641,13 @@ public class GameRoom {
         }
 
         for (PlayerInfo p : players) {
-            String dHand = dealer.getHand().toString(true, false);
+            // 旁觀者只能看到莊家的第一張牌（蓋牌狀態），無法看到莊家開牌
+            String dHand;
+            if (p.isSpectator()) {
+                dHand = dealer.getHand().toString(false, true); // 只顯示莊家第一張牌
+            } else {
+                dHand = dealer.getHand().toString(true, false); // 正常玩家可以看到全部牌
+            }
             String mHand = p.getHand().toString(true, false);
             p.send(Protocol.GAME_OVER + Protocol.DELIMITER + dHand + Protocol.DELIMITER + mHand + Protocol.DELIMITER
                     + sb.toString());
