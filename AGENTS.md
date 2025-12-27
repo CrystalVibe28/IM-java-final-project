@@ -22,10 +22,14 @@ im-java/
 │   ├── src/
 │   │   ├── Main.java         # 進入點
 │   │   ├── client/           # 主視窗與網路
+│   │   │   ├── BlackjackClient.java
+│   │   │   ├── NetworkClient.java
+│   │   │   └── UserConfig.java      # 本地配置管理（UID、暱稱、IP）
 │   │   ├── handler/          # 訊息處理
 │   │   ├── ui/               # UI 元件
 │   │   └── protocol/         # 通訊協定
-│   └── out/                  # 編譯輸出
+│   ├── out/                  # 編譯輸出
+│   └── user_config.txt       # 本地配置檔（自動生成）
 │
 └── AGENTS.md                 # 本文件
 ```
@@ -53,7 +57,7 @@ java -cp out Main
 指令格式：`COMMAND|PARAM1|PARAM2|...`
 
 **Client → Server:**
-- `LOGIN|name` - 登入
+- `LOGIN|uid|name` - 登入（包含 UID 和暱稱）
 - `PVE_START` - 開始單人練習
 - `CREATE_ROOM` - 創建房間
 - `JOIN_ROOM|roomId` - 加入房間
@@ -83,3 +87,17 @@ java -cp out Main
 - 莊家爆牌：-2 HP
 - 莊家消極懲罰（不拿牌且未獲勝）：-1 HP
 - HP 歸零則淘汰
+
+## 用戶識別與本地儲存
+
+### UID（用戶識別碼）
+- 客戶端首次啟動時自動生成 UUID 格式的 UID
+- UID 儲存於本地配置檔 `user_config.txt`
+- 伺服器使用 UID 作為玩家的唯一標識符，避免重名問題
+- **注意**：UID 僅用於後端邏輯，所有 GUI 顯示都使用玩家暱稱
+
+### 本地配置儲存
+- 配置檔案：`user_config.txt`（位於客戶端根目錄）
+- 儲存內容：`uid|name|serverIp`
+- 客戶端啟動時自動載入上次使用的暱稱和伺服器 IP
+- 連線成功後自動儲存當前配置

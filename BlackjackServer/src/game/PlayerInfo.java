@@ -76,6 +76,13 @@ public class PlayerInfo {
     public String getName() {
         return handler != null ? handler.getName() : "CPU";
     }
+    
+    /**
+     * 取得玩家 UID（用於伺服器內部識別）
+     */
+    public String getUid() {
+        return handler != null ? handler.getUid() : "cpu";
+    }
 
     /**
      * 發送訊息給此玩家

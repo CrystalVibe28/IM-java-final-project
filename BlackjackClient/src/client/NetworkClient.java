@@ -17,13 +17,13 @@ public class NetworkClient {
     /**
      * 連線到伺服器
      */
-    public void connect(String host, int port, String playerName) throws IOException {
+    public void connect(String host, int port, String uid, String playerName) throws IOException {
         socket = new Socket(host, port);
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         
-        // 發送登入指令
-        send(Protocol.LOGIN + Protocol.DELIMITER + playerName);
+        // 發送登入指令（包含 UID 和 name）
+        send(Protocol.LOGIN + Protocol.DELIMITER + uid + Protocol.DELIMITER + playerName);
         
         // 啟動監聽執行緒
         startListening();

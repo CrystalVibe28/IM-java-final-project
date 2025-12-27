@@ -2,10 +2,11 @@
  * 通訊協定常數 (與 Server 共用定義)
  */
 public final class Protocol {
-    private Protocol() {} // 禁止實例化
+    private Protocol() {
+    } // 禁止實例化
 
     // === Client -> Server ===
-    public static final String LOGIN = "LOGIN";
+    public static final String LOGIN = "LOGIN"; // LOGIN|uid|name
     public static final String PVE_START = "PVE_START";
     public static final String CREATE_ROOM = "CREATE_ROOM";
     public static final String JOIN_ROOM = "JOIN_ROOM";

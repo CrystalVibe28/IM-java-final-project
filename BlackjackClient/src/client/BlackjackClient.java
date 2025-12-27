@@ -104,7 +104,10 @@ public class BlackjackClient extends JFrame {
     private void connectToServer(String ip, String name) {
         new Thread(() -> {
             try {
-                networkClient.connect(ip, SERVER_PORT, name);
+                String uid = loginPanel.getUid();
+                networkClient.connect(ip, SERVER_PORT, uid, name);
+                // 連線成功後儲存配置
+                SwingUtilities.invokeLater(() -> loginPanel.saveCurrentConfig());
             } catch (IOException e) {
                 SwingUtilities.invokeLater(() -> {
                     JOptionPane.showMessageDialog(this, 

@@ -9,18 +9,26 @@ public class LoginPanel extends JPanel {
     private final JTextField nameField;
     private final JTextField ipField;
     private final JButton loginButton;
+    private final UserConfig userConfig;
 
     public LoginPanel() {
         setLayout(new GridBagLayout());
         setBackground(new Color(40, 40, 40));
+        
+        // 載入本地配置
+        userConfig = new UserConfig();
 
         JLabel title = new JLabel("Blackjack Survival");
         title.setFont(new Font("Arial", Font.BOLD, 36));
         title.setForeground(Color.ORANGE);
 
         nameField = new JTextField(15);
-        ipField = new JTextField("127.0.0.1", 15);
+        ipField = new JTextField(15);
         loginButton = new JButton("連線並進入遊戲");
+        
+        // 自動填入上次使用的配置
+        nameField.setText(userConfig.getName());
+        ipField.setText(userConfig.getServerIp());
 
         GridBagConstraints g = new GridBagConstraints();
         g.insets = new Insets(10, 10, 10, 10);
@@ -52,5 +60,15 @@ public class LoginPanel extends JPanel {
 
     public JButton getLoginButton() {
         return loginButton;
+    }
+    
+    public String getUid() {
+        return userConfig.getUid();
+    }
+    
+    public void saveCurrentConfig() {
+        userConfig.setName(getPlayerName());
+        userConfig.setServerIp(getIp());
+        userConfig.saveConfig();
     }
 }

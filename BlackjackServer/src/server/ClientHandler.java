@@ -11,6 +11,7 @@ public class ClientHandler implements Runnable {
     
     private PrintWriter out;
     private BufferedReader in;
+    private String uid;
     private String name;
     private GameRoom currentRoom;
 
@@ -21,6 +22,10 @@ public class ClientHandler implements Runnable {
 
     public String getName() {
         return name;
+    }
+    
+    public String getUid() {
+        return uid;
     }
 
     @Override
@@ -46,7 +51,18 @@ public class ClientHandler implements Runnable {
 
         switch (action) {
             case Protocol.LOGIN:
-                this.name = parts.length > 1 ? parts[1] : "Unknown";
+                if (parts.length > 2) {
+                    this.uid = parts[1];
+                    this.name = parts[2];
+                } else if (parts.length > 1) {
+                    // 向後兼容：若只有 name 沒有 uid
+                    this.uid = "unknown";
+                    this.name = parts[1];
+                } else {
+                    this.uid = "unknown";
+                    this.name = "Unknown";
+                }
+                System.out.println("玩家登入 - Name: " + name + ", UID: " + uid);
                 send(Protocol.LOGIN_OK);
                 break;
                 
