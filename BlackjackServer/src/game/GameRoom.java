@@ -598,12 +598,14 @@ public class GameRoom {
     }
 
     private void nextTurn() {
-        sendStateToAll();
         PlayerInfo current = players.get(turnIndex);
+        // 先檢查是否需要結束回合，避免在結束前發送隱藏牌的 STATE 導致閒家看不到莊家開牌
         if (current.isDealer() && (current.hasStayed() || current.getHand().isBust())) {
             endRound();
             return;
         }
+        // 遊戲繼續時才發送 STATE（還需要繼續遊戲才更新狀態）
+        sendStateToAll();
         turnIndex = (turnIndex + 1) % players.size();
         checkAndNotifyTurn();
     }
@@ -878,7 +880,9 @@ public class GameRoom {
                         + dHand + Protocol.DELIMITER + mHand + Protocol.DELIMITER + spectatorList);
             } else {
                 // 正常玩家
-                String dHand = (p == dealer)
+                // 當輪到莊家行動時，所有玩家都能看到莊家完整手牌（莊家開牌）
+                boolean isDealerTurn = (turnIndex == dealerIndex);
+                String dHand = (p == dealer || isDealerTurn)
                         ? dealer.getHand().toString(true, false)
                         : dealer.getHand().toString(false, true);
                 String mHand = p.getHand().toString(true, false);
