@@ -2,7 +2,7 @@ import java.util.List;
 
 /**
  * 「我喝一口」效果
- * 使用者回復 1 HP（允許超過 15）
+ * 使用者回復 1 HP（允許超過 10）
  */
 public class HealOneHpEffect implements FunctionCardEffect {
 

@@ -258,7 +258,7 @@ public class GameRoom {
         for (PlayerInfo p : players) {
             p.setSpectator(false);
             p.setJoinedMidGame(false);
-            p.setHp(15);
+            p.setHp(10);
             p.setReady(true);
             p.clearFunctionCards();
         }
@@ -291,7 +291,7 @@ public class GameRoom {
             for (PlayerInfo p : players) {
                 p.setSpectator(false);
                 p.setJoinedMidGame(false); // 場結束，重置中途加入標記
-                p.setHp(15);
+                p.setHp(10);
                 p.setReady(true);
                 p.clearFunctionCards();
             }
@@ -786,7 +786,7 @@ public class GameRoom {
         for (PlayerInfo p : players) {
             p.setSpectator(false);
             p.setJoinedMidGame(false); // 場結束，重置中途加入標記
-            p.setHp(15);
+            p.setHp(10);
             p.setReady(true);
             p.clearFunctionCards();
         }
