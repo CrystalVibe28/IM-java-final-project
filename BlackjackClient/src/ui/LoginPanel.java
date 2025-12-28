@@ -18,7 +18,12 @@ public class LoginPanel extends JPanel {
         userConfig = new UserConfig();
 
         JLabel title = new JLabel("21點：博弈紛爭");
-        title.setFont(new Font("Arial", Font.BOLD, 36));
+        // 使用支援中文的字體：優先使用微軟正黑體，備選 Dialog 字體
+        Font titleFont = new Font("Microsoft JhengHei", Font.BOLD, 36);
+        if (!titleFont.getFamily().equals("Microsoft JhengHei")) {
+            titleFont = new Font("Dialog", Font.BOLD, 36);
+        }
+        title.setFont(titleFont);
         title.setForeground(Color.ORANGE);
 
         nameField = new JTextField(15);
