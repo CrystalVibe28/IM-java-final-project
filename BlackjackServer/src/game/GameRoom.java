@@ -704,13 +704,8 @@ public class GameRoom {
         }
 
         for (PlayerInfo p : players) {
-            // 旁觀者只能看到莊家的第一張牌（蓋牌狀態），無法看到莊家開牌
-            String dHand;
-            if (p.isSpectator()) {
-                dHand = dealer.getHand().toString(false, true); // 只顯示莊家第一張牌
-            } else {
-                dHand = dealer.getHand().toString(true, false); // 正常玩家可以看到全部牌
-            }
+            // 旁觀者也能看到完整結果（上帝視角）
+            String dHand = dealer.getHand().toString(true, false); // 所有人都能看到莊家全部牌
             String mHand = p.getHand().toString(true, false);
             p.send(Protocol.GAME_OVER + Protocol.DELIMITER + dHand + Protocol.DELIMITER + mHand + Protocol.DELIMITER
                     + sb.toString());
@@ -872,11 +867,13 @@ public class GameRoom {
         String dealerListStr = dealerListSb.toString();
 
         for (PlayerInfo p : players) {
-            // 旁觀者特殊處理：只能看到莊家的第一張牌，自己手牌區為空
+            // 旁觀者特殊處理：上帝視角 - 與莊家相同的視角，手牌區顯示當前活動玩家
             if (p.isSpectator()) {
-                String dHand = dealer.getHand().toString(false, true); // 只顯示莊家第一張牌
-                String mHand = ""; // 旁觀者沒有手牌
-                String spectatorList = normalListStr + "(旁觀)";
+                String dHand = dealer.getHand().toString(true, false); // 顯示莊家完整手牌
+                // 手牌區顯示當前活動玩家的手牌
+                PlayerInfo currentPlayer = players.get(turnIndex);
+                String mHand = currentPlayer.isSpectator() ? "" : currentPlayer.getHand().toString(true, false);
+                String spectatorList = dealerListStr + "(旁觀)"; // 使用莊家視角的列表
                 p.send(Protocol.STATE + Protocol.DELIMITER + "PLAYING" + Protocol.DELIMITER
                         + dHand + Protocol.DELIMITER + mHand + Protocol.DELIMITER + spectatorList);
             } else {
