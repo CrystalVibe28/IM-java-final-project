@@ -15,7 +15,8 @@ im-java/
 │   │   ├── server/           # 網路層
 │   │   ├── game/             # 遊戲邏輯
 │   │   ├── model/            # 資料模型
-│   │   └── protocol/         # 通訊協定
+│   │   ├── protocol/         # 通訊協定
+│   │   └── command/          # 命令模式 (Command Pattern)
 │   └── out/                  # 編譯輸出
 │
 ├── BlackjackClient/          # 客戶端程式
@@ -27,7 +28,8 @@ im-java/
 │   │   │   └── UserConfig.java      # 本地配置管理（UID、暱稱、IP）
 │   │   ├── handler/          # 訊息處理
 │   │   ├── ui/               # UI 元件
-│   │   └── protocol/         # 通訊協定
+│   │   ├── protocol/         # 通訊協定
+│   │   └── command/          # 命令模式 (Command Pattern)
 │   ├── out/                  # 編譯輸出
 │   └── user_config.txt       # 本地配置檔（自動生成）
 │
@@ -40,7 +42,7 @@ im-java/
 
 ```bash
 cd BlackjackServer
-javac -d out -sourcepath src src/Main.java src/server/*.java src/game/*.java src/model/*.java src/protocol/*.java
+javac -encoding UTF-8 -d out -sourcepath src src/Main.java src/server/*.java src/game/*.java src/model/*.java src/protocol/*.java src/command/*.java
 java -cp out Main
 ```
 
@@ -48,7 +50,7 @@ java -cp out Main
 
 ```bash
 cd BlackjackClient
-javac -d out -sourcepath src src/Main.java src/client/*.java src/handler/*.java src/ui/*.java src/protocol/*.java
+javac -encoding UTF-8 -d out -sourcepath src src/Main.java src/client/*.java src/handler/*.java src/ui/*.java src/protocol/*.java src/command/*.java
 java -cp out Main
 ```
 
@@ -190,3 +192,80 @@ PVP 模式分為兩個層級：**一場遊戲（Game）** 與 **一回合（Roun
 - 儲存內容：`uid|name|serverIp`
 - 客戶端啟動時自動載入上次使用的暱稱和伺服器 IP
 - 連線成功後自動儲存當前配置
+
+## 設計模式
+
+### Command Pattern（命令模式）
+
+專案採用命令模式處理客戶端與伺服器之間的通訊，將 switch-case 區塊重構為獨立的命令物件。
+
+#### 伺服器端架構
+
+```
+command/
+├── Command.java              # 命令介面
+├── CommandContext.java       # 命令執行上下文
+├── CommandRegistry.java      # 命令註冊表
+├── LoginCommand.java         # 登入命令
+├── PveStartCommand.java      # PVE 開始命令
+├── CreateRoomCommand.java    # 創建房間命令
+├── JoinRoomCommand.java      # 加入房間命令
+├── LeaveCommand.java         # 離開房間命令
+├── StartGameCommand.java     # 開始遊戲命令
+├── ReadyCommand.java         # 準備命令
+├── ChatCommand.java          # 聊天命令
+├── HitCommand.java           # 要牌命令
+├── StandCommand.java         # 停牌命令
+├── UseFunctionCardCommand.java   # 使用功能牌命令
+└── SkipFunctionCardCommand.java  # 跳過功能牌命令
+```
+
+**核心類別**：
+- `Command`：定義 `execute(CommandContext context)` 方法
+- `CommandContext`：封裝 `ClientHandler`、命令參數、房間列表
+- `CommandRegistry`：透過 `getCommand(action)` 取得對應命令
+
+#### 客戶端架構
+
+```
+command/
+├── ServerMessageHandler.java     # 訊息處理器介面
+├── MessageContext.java           # 訊息處理上下文
+├── MessageHandlerRegistry.java   # 訊息處理器註冊表
+├── LoginOkHandler.java           # 登入成功處理器
+├── PveStartedHandler.java        # PVE 開始處理器
+├── RoomCreatedHandler.java       # 房間創建處理器
+├── RoomJoinedHandler.java        # 加入房間處理器
+├── StateHandler.java             # 狀態更新處理器
+├── TurnHandler.java              # 輪次通知處理器
+├── GameOverHandler.java          # 回合結束處理器
+├── HpUpdateHandler.java          # HP 更新處理器
+├── ChatHandler.java              # 聊天處理器
+├── MsgHandler.java               # 系統訊息處理器
+├── LobbyHandler.java             # 返回大廳處理器
+├── FunctionCardsHandler.java     # 功能牌列表處理器
+├── FunctionCardUsedHandler.java  # 功能牌使用通知處理器
+├── FunctionCardPhaseHandler.java # 功能牌階段處理器
+├── FunctionCardPhaseEndHandler.java  # 功能牌階段結束處理器
+├── GameWinHandler.java           # 遊戲勝利處理器
+├── RoundCancelHandler.java       # 回合取消處理器
+└── ErrorHandler.java             # 錯誤處理器
+```
+
+**核心類別**：
+- `ServerMessageHandler`：定義 `handle(MessageContext context)` 方法
+- `MessageContext`：封裝 `BlackjackClient`、訊息參數
+- `MessageHandlerRegistry`：透過 `getHandler(cmd)` 取得對應處理器
+
+#### 新增命令步驟
+
+**伺服器端新增命令**：
+1. 建立新命令類別實作 `Command` 介面
+2. 在 `CommandRegistry.registerCommands()` 中註冊
+3. 在 `Protocol.java` 新增協定常數（如有需要）
+
+**客戶端新增處理器**：
+1. 建立新處理器類別實作 `ServerMessageHandler` 介面
+2. 在 `MessageHandlerRegistry.registerHandlers()` 中註冊
+3. 在 `Protocol.java` 新增協定常數（如有需要）
+

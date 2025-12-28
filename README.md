@@ -51,11 +51,11 @@ PVP 模式使用 **場 (Game)** 與 **回合 (Round)** 雙層結構：
 ```bash
 # Server
 cd BlackjackServer
-javac -d out -sourcepath src src/Main.java src/server/*.java src/game/*.java src/model/*.java src/protocol/*.java
+javac -encoding UTF-8 -d out -sourcepath src src/Main.java src/server/*.java src/game/*.java src/model/*.java src/protocol/*.java src/command/*.java
 
 # Client
 cd BlackjackClient
-javac -d out -sourcepath src src/Main.java src/client/*.java src/handler/*.java src/ui/*.java src/protocol/*.java
+javac -encoding UTF-8 -d out -sourcepath src src/Main.java src/client/*.java src/handler/*.java src/ui/*.java src/protocol/*.java src/command/*.java
 ```
 
 ### 執行
@@ -88,7 +88,8 @@ im-java/
 │       ├── server/             # 網路層
 │       ├── game/               # 遊戲邏輯
 │       ├── model/              # 資料模型 (Card, Deck, Hand)
-│       └── protocol/           # 通訊協定
+│       ├── protocol/           # 通訊協定
+│       └── command/            # 命令模式 (Command Pattern)
 │
 ├── BlackjackClient/
 │   └── src/
@@ -96,7 +97,8 @@ im-java/
 │       ├── client/             # 主視窗與網路
 │       ├── handler/            # 訊息處理
 │       ├── ui/                 # UI 元件
-│       └── protocol/           # 通訊協定
+│       ├── protocol/           # 通訊協定
+│       └── command/            # 命令模式 (Command Pattern)
 │
 ├── README.md
 ├── AGENTS.md
@@ -109,6 +111,30 @@ im-java/
 - **網路**: Socket (TCP)
 - **UI**: Swing
 - **預設 Port**: 12345
+- **設計模式**: Command Pattern
+
+## 設計模式
+
+### Command Pattern（命令模式）
+
+專案採用命令模式處理客戶端與伺服器之間的通訊，將每個操作封裝為獨立的命令物件：
+
+**伺服器端**：
+- `Command` 介面定義命令契約
+- `CommandContext` 封裝執行上下文
+- `CommandRegistry` 管理命令註冊與查找
+- 各命令類別：`LoginCommand`、`HitCommand`、`StandCommand` 等
+
+**客戶端**：
+- `ServerMessageHandler` 介面定義訊息處理契約
+- `MessageContext` 封裝處理上下文
+- `MessageHandlerRegistry` 管理處理器註冊與查找
+- 各處理器類別：`LoginOkHandler`、`GameOverHandler` 等
+
+**優點**：
+- 單一職責：每個命令/處理器只負責一種操作
+- 開放封閉：新增命令無需修改現有程式碼
+- 可測試性：命令可獨立進行單元測試
 
 ## License
 

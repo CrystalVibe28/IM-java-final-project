@@ -4,10 +4,12 @@ import java.util.Map;
 
 /**
  * 客戶端處理器 - 處理單一客戶端連線
+ * 使用 Command Pattern 處理客戶端命令
  */
 public class ClientHandler implements Runnable {
     private final Socket socket;
     private final Map<String, GameRoom> rooms;
+    private final CommandRegistry commandRegistry;
 
     private PrintWriter out;
     private BufferedReader in;
@@ -18,14 +20,31 @@ public class ClientHandler implements Runnable {
     public ClientHandler(Socket socket, Map<String, GameRoom> rooms) {
         this.socket = socket;
         this.rooms = rooms;
+        this.commandRegistry = new CommandRegistry();
     }
 
     public String getName() {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getUid() {
         return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public GameRoom getCurrentRoom() {
+        return currentRoom;
+    }
+
+    public void setCurrentRoom(GameRoom room) {
+        this.currentRoom = room;
     }
 
     @Override
@@ -45,141 +64,23 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+     * 處理客戶端命令 - 使用 Command Pattern
+     */
     private void processCommand(String cmd) {
         String[] parts = cmd.split("\\|");
         String action = parts[0];
 
-        switch (action) {
-            case Protocol.LOGIN:
-                if (parts.length > 2) {
-                    this.uid = parts[1];
-                    this.name = parts[2];
-                } else if (parts.length > 1) {
-                    // 向後兼容：若只有 name 沒有 uid
-                    this.uid = "unknown";
-                    this.name = parts[1];
-                } else {
-                    this.uid = "unknown";
-                    this.name = "Unknown";
-                }
-                System.out.println("玩家登入 - Name: " + name + ", UID: " + uid);
-                send(Protocol.LOGIN_OK);
-                break;
-
-            case Protocol.PVE_START:
-                startPVE();
-                break;
-
-            case Protocol.CREATE_ROOM:
-                createRoom();
-                break;
-
-            case Protocol.JOIN_ROOM:
-                if (parts.length > 1) {
-                    joinRoom(parts[1]);
-                }
-                break;
-
-            case Protocol.START:
-                if (currentRoom != null) {
-                    currentRoom.tryStartGame(this);
-                }
-                break;
-
-            case Protocol.READY:
-                if (currentRoom != null) {
-                    currentRoom.handlePlayerReady(this);
-                }
-                break;
-
-            case Protocol.CHAT:
-                if (currentRoom != null && parts.length > 1) {
-                    // 拼接所有訊息部分，避免 | 符號導致訊息被截斷
-                    StringBuilder message = new StringBuilder(parts[1]);
-                    for (int i = 2; i < parts.length; i++) {
-                        message.append("|").append(parts[i]);
-                    }
-                    currentRoom.broadcastChat(name, message.toString());
-                }
-                break;
-
-            case Protocol.HIT:
-            case Protocol.STAND:
-                if (currentRoom != null) {
-                    currentRoom.handleGameAction(this, action);
-                }
-                break;
-
-            case Protocol.USE_FUNCTION_CARD:
-                if (currentRoom != null && parts.length > 2) {
-                    try {
-                        int cardId = Integer.parseInt(parts[1]);
-                        String targetUid = parts[2];
-                        currentRoom.handleUseFunctionCard(this, cardId, targetUid);
-                    } catch (NumberFormatException e) {
-                        send(Protocol.ERROR + Protocol.DELIMITER + "無效的功能牌 ID");
-                    }
-                }
-                break;
-
-            case Protocol.SKIP_FUNCTION_CARD:
-                if (currentRoom != null) {
-                    currentRoom.handleSkipFunctionCard(this);
-                }
-                break;
-
-            case Protocol.LEAVE:
-                leaveRoom();
-                break;
+        Command command = commandRegistry.getCommand(action);
+        if (command != null) {
+            CommandContext context = new CommandContext(this, parts, rooms);
+            command.execute(context);
         }
     }
 
-    private void startPVE() {
-        send(Protocol.PVE_STARTED);
-        GameRoom room = new GameRoom(this, null);
-        this.currentRoom = room;
-        room.startGame();
-    }
-
-    private void createRoom() {
-        String roomId = generateRoomId();
-        GameRoom room = new GameRoom(this, roomId);
-        rooms.put(roomId, room);
-        this.currentRoom = room;
-        send(Protocol.ROOM_CREATED + Protocol.DELIMITER + roomId);
-    }
-
-    private String generateRoomId() {
-        String roomId;
-        do {
-            roomId = String.valueOf((int) (Math.random() * 9000) + 1000);
-        } while (rooms.containsKey(roomId));
-        return roomId;
-    }
-
-    private void joinRoom(String roomId) {
-        GameRoom room = rooms.get(roomId);
-
-        if (room == null) {
-            send(Protocol.ERROR + Protocol.DELIMITER + "房間不存在");
-            return;
-        }
-
-        if (room.isFull()) {
-            send(Protocol.ERROR + Protocol.DELIMITER + "房間已滿");
-            return;
-        }
-
-        if (room.hasPlayer(this.name)) {
-            send(Protocol.ERROR + Protocol.DELIMITER + "房間內已有相同名字的玩家");
-            return;
-        }
-
-        room.addPlayer(this);
-        this.currentRoom = room;
-        send(Protocol.ROOM_JOINED + Protocol.DELIMITER + roomId);
-    }
-
+    /**
+     * 離開房間並清理資源
+     */
     private void leaveRoom() {
         if (currentRoom != null) {
             currentRoom.removePlayer(this);
@@ -191,6 +92,9 @@ public class ClientHandler implements Runnable {
         send(Protocol.LOBBY);
     }
 
+    /**
+     * 清理連線資源
+     */
     private void cleanup() {
         leaveRoom();
         try {
@@ -200,6 +104,9 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+     * 發送訊息給客戶端
+     */
     public void send(String message) {
         if (out != null) {
             out.println(message);
