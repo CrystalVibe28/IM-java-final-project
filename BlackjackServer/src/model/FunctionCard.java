@@ -1,6 +1,6 @@
 /**
- * 功能牌類別
- * 封裝單張功能牌的資訊
+ * 機會牌類別
+ * 封裝單張機會牌的資訊
  */
 public class FunctionCard {
     private static int nextId = 1;
@@ -30,7 +30,7 @@ public class FunctionCard {
     }
 
     /**
-     * 從協定字串建立功能牌（用於重建物件）
+     * 從協定字串建立機會牌（用於重建物件）
      */
     public static FunctionCard fromProtocol(String data) {
         String[] parts = data.split(",");

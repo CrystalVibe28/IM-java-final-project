@@ -55,7 +55,7 @@ public class MessageHandler {
                         client.getGamePanel().updatePlayerList(parts[4], client.getPlayerName());
                     }
                     client.getGamePanel().getStartGameButton().setVisible(false);
-                    // 遊戲進行中禁用功能牌
+                    // 遊戲進行中禁用機會牌
                     client.getGamePanel().setFunctionCardsEnabled(false);
                     break;
 
@@ -70,7 +70,7 @@ public class MessageHandler {
                         client.getGamePanel().getStatusLabel().setForeground(Color.YELLOW);
                         client.getGamePanel().lockButtons();
                     }
-                    // 遊戲進行中禁用功能牌
+                    // 遊戲進行中禁用機會牌
                     client.getGamePanel().setFunctionCardsEnabled(false);
                     break;
 
@@ -83,7 +83,7 @@ public class MessageHandler {
                     client.getGamePanel().getStatusLabel().setForeground(Color.WHITE);
                     client.getGamePanel().lockButtons();
                     client.checkStartButtonVisibility();
-                    // 回合結束，禁用功能牌（等待進入機會卡階段時才啟用）
+                    // 回合結束，禁用機會牌（等待進入機會牌階段時才啟用）
                     client.getGamePanel().setFunctionCardsEnabled(false);
                     break;
 
@@ -116,15 +116,15 @@ public class MessageHandler {
                     break;
 
                 case Protocol.FUNCTION_CARDS:
-                    // 更新功能牌 UI
+                    // 更新機會牌 UI
                     client.updateFunctionCards(parts.length > 1 ? parts[1] : "");
                     break;
 
                 case Protocol.FUNCTION_CARD_USED:
-                    // 功能牌使用通知（已在聊天室透過 MSG 顯示，此處可做額外處理）
+                    // 機會牌使用通知（已在聊天室透過 MSG 顯示，此處可做額外處理）
                     if (parts.length >= 4) {
                         JTextArea chatArea = client.getGamePanel().getChatArea();
-                        chatArea.append("[機會卡] " + parts[1] + " 使用了「" + parts[2] + "」對 " + parts[3] + "\n");
+                        chatArea.append("[機會牌] " + parts[1] + " 使用了「" + parts[2] + "」對 " + parts[3] + "\n");
                         chatArea.setCaretPosition(chatArea.getDocument().getLength());
                     }
                     break;
@@ -132,8 +132,8 @@ public class MessageHandler {
                 case Protocol.FUNCTION_CARD_PHASE:
                     // 機會卡階段輪次通知
                     if (parts.length > 1 && "YOUR".equals(parts[1])) {
-                        // 輪到自己選擇機會卡
-                        client.getGamePanel().getStatusLabel().setText("選擇使用機會卡或點「不使用機會卡」");
+                        // 輪到自己選擇機會牌
+                        client.getGamePanel().getStatusLabel().setText("選擇使用機會牌或點「不使用機會牌」");
                         client.getGamePanel().getStatusLabel().setForeground(Color.ORANGE);
                         client.getGamePanel().setFunctionCardsEnabled(true);
                         client.getGamePanel().getSkipFunctionCardButton().setVisible(true);

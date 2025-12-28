@@ -17,7 +17,7 @@ public class LoginPanel extends JPanel {
         // 載入本地配置
         userConfig = new UserConfig();
 
-        JLabel title = new JLabel("Blackjack Survival");
+        JLabel title = new JLabel("21點：博弈紛爭");
         title.setFont(new Font("Arial", Font.BOLD, 36));
         title.setForeground(Color.ORANGE);
 

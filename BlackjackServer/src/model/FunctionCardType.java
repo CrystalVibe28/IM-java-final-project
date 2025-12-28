@@ -1,6 +1,6 @@
 /**
- * 功能牌類型列舉
- * 定義所有功能牌的種類與描述
+ * 機會牌類型列舉
+ * 定義所有機會牌的種類與描述
  */
 public enum FunctionCardType {
     MAKE_A_DEAL("做個交易", "與一位玩家互換手牌");
@@ -22,7 +22,7 @@ public enum FunctionCardType {
     }
 
     /**
-     * 從協定字串解析功能牌類型
+     * 從協定字串解析機會牌類型
      */
     public static FunctionCardType fromString(String name) {
         for (FunctionCardType type : values()) {

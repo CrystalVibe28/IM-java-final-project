@@ -134,24 +134,24 @@ public class PlayerInfo {
         }
     }
 
-    // ==================== 功能牌管理 ====================
+    // ==================== 機會牌管理 ====================
 
     /**
-     * 取得功能牌列表
+     * 取得機會牌列表
      */
     public List<FunctionCard> getFunctionCards() {
         return functionCards;
     }
 
     /**
-     * 新增功能牌
+     * 新增機會牌
      */
     public void addFunctionCard(FunctionCard card) {
         functionCards.add(card);
     }
 
     /**
-     * 移除指定 ID 的功能牌
+     * 移除指定 ID 的機會牌
      */
     public FunctionCard removeFunctionCard(int cardId) {
         for (int i = 0; i < functionCards.size(); i++) {
@@ -163,14 +163,14 @@ public class PlayerInfo {
     }
 
     /**
-     * 清空功能牌
+     * 清空機會牌
      */
     public void clearFunctionCards() {
         functionCards.clear();
     }
 
     /**
-     * 功能牌列表轉協定字串
+     * 機會牌列表轉協定字串
      */
     public String getFunctionCardsProtocol() {
         StringBuilder sb = new StringBuilder();

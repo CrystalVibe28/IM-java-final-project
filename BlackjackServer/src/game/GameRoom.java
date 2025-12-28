@@ -75,7 +75,7 @@ public class GameRoom {
                 players.add(newPlayer);
                 broadcast(Protocol.MSG + Protocol.DELIMITER + "玩家 " + handler.getName() + " 加入 (" + players.size()
                         + "/5)");
-                // 給新加入的玩家發功能牌（如果房間已經有玩家有功能牌，表示不是第一局）
+                // 給新加入的玩家發機會牌（如果房間已經有玩家有機會牌，表示不是第一局）
                 // 非第一局加入的玩家需要確認戰績才能開始
                 if (roomId != null && players.size() > 1 && !players.get(0).getFunctionCards().isEmpty()) {
                     newPlayer.setReady(false); // 非第一局，需要確認才能開始
@@ -86,7 +86,7 @@ public class GameRoom {
             }
 
             broadcast(Protocol.HP_UPDATE + Protocol.DELIMITER + getHpString());
-            // 在玩家加入時發送功能牌狀態
+            // 在玩家加入時發送機會牌狀態
             sendFunctionCardsToAll();
         }
     }
@@ -463,7 +463,7 @@ public class GameRoom {
             p.resetFunctionCardPhase(); // 重置機會卡階段狀態
         }
 
-        // 發放功能牌（如果是第一局，玩家還沒有功能牌）
+        // 發放機會牌（如果是第一局，玩家還沒有機會牌）
         boolean firstGame = players.stream().allMatch(p -> p.getFunctionCards().isEmpty());
         if (firstGame) {
             dealFunctionCards();
@@ -894,13 +894,13 @@ public class GameRoom {
         }
     }
 
-    // ==================== 功能牌管理 ====================
+    // ==================== 機會牌管理 ====================
 
     /**
-     * 給所有玩家發放功能牌（第一局開始時）
+     * 給所有玩家發放機會牌（第一局開始時）
      */
     private void dealFunctionCards() {
-        // PVE 模式不發功能牌
+        // PVE 模式不發機會牌
         if (roomId == null)
             return;
 
@@ -914,18 +914,18 @@ public class GameRoom {
     }
 
     /**
-     * 給單一玩家發功能牌
+     * 給單一玩家發機會牌
      */
     private void dealFunctionCardsToPlayer(PlayerInfo player) {
-        // 發 3 張功能牌
+        // 發 3 張機會牌
         for (int i = 0; i < 3; i++) {
-            // 目前只有一種功能牌，未來可以隨機或從牌堆抽
+            // 目前只有一種機會牌，未來可以隨機或從牌堆抽
             player.addFunctionCard(new FunctionCard(FunctionCardType.MAKE_A_DEAL));
         }
     }
 
     /**
-     * 發送功能牌狀態給所有玩家
+     * 發送機會牌狀態給所有玩家
      */
     private void sendFunctionCardsToAll() {
         for (PlayerInfo p : players) {
@@ -934,7 +934,7 @@ public class GameRoom {
     }
 
     /**
-     * 發送功能牌狀態給指定玩家
+     * 發送機會牌狀態給指定玩家
      */
     private void sendFunctionCardsTo(PlayerInfo player) {
         String cardsData = player.getFunctionCardsProtocol();
@@ -942,7 +942,7 @@ public class GameRoom {
     }
 
     /**
-     * 處理功能牌使用請求
+     * 處理機會牌使用請求
      */
     public void handleUseFunctionCard(ClientHandler handler, int cardId, String targetUid) {
         // 必須在機會卡階段
@@ -979,7 +979,7 @@ public class GameRoom {
             return;
         }
 
-        // 移除功能牌
+        // 移除機會牌
         FunctionCard card = user.removeFunctionCard(cardId);
         if (card == null) {
             handler.send(Protocol.ERROR + Protocol.DELIMITER + "找不到指定的機會卡");
@@ -990,14 +990,14 @@ public class GameRoom {
         user.setUsedFunctionCardThisRound(true);
         user.setConfirmedFunctionCardPhase(true);
 
-        // 根據功能牌類型執行效果
+        // 根據機會牌類型執行效果
         switch (card.getType()) {
             case MAKE_A_DEAL:
                 executeMakeADeal(user, targetUid);
                 break;
         }
 
-        // 更新功能牌狀態
+        // 更新機會牌狀態
         sendFunctionCardsToAll();
         sendStateToAll();
 

@@ -19,8 +19,8 @@ public class GamePanel extends JPanel {
     private final JButton hitButton;
     private final JButton standButton;
     private final JButton leaveButton;
-    private final JPanel functionCardArea; // 功能牌區域
-    private final JButton skipFunctionCardButton; // 不使用機會卡按鈕
+    private final JPanel functionCardArea; // 機會牌區域
+    private final JButton skipFunctionCardButton; // 不使用機會牌按鈕
 
     // 狀態
     private String dealerTitleBase = "莊家區";
@@ -59,7 +59,7 @@ public class GamePanel extends JPanel {
         // 玩家列表與聊天區
         JPanel infoSplit = new JPanel(new GridLayout(1, 2));
 
-        // 左側：玩家列表 + 功能牌區
+        // 左側：玩家列表 + 機會牌區
         JPanel leftPanel = new JPanel(new BorderLayout());
 
         playerListArea = new JTextArea();
@@ -70,14 +70,14 @@ public class GamePanel extends JPanel {
         JScrollPane listScroll = new JScrollPane(playerListArea);
         listScroll.setBorder(createTitledBorder("存活玩家"));
 
-        // 功能牌區域 - 使用水平 BoxLayout 確保元件不會重疊
+        // 機會牌區域 - 使用水平 BoxLayout 確保元件不會重疊
         functionCardArea = new JPanel();
         functionCardArea.setLayout(new FlowLayout(FlowLayout.CENTER, 8, 5));
         functionCardArea.setBackground(new Color(40, 40, 60));
-        functionCardArea.setBorder(createTitledBorder("機會卡"));
+        functionCardArea.setBorder(createTitledBorder("機會牌"));
         functionCardArea.setPreferredSize(new Dimension(0, 135)); // 增加高度以確保顯示完整
 
-        // 不使用機會卡按鈕 - 使用 BasicButtonUI 確保顏色在 Windows 上正確顯示
+        // 不使用機會牌按鈕 - 使用 BasicButtonUI 確保顏色在 Windows 上正確顯示
         skipFunctionCardButton = new JButton("跳過");
         skipFunctionCardButton.setUI(new javax.swing.plaf.basic.BasicButtonUI());
         skipFunctionCardButton.setBackground(new Color(200, 100, 100));
@@ -315,17 +315,17 @@ public class GamePanel extends JPanel {
                 Color.WHITE);
     }
 
-    // ==================== 功能牌管理 ====================
+    // ==================== 機會牌管理 ====================
 
     public JPanel getFunctionCardArea() {
         return functionCardArea;
     }
 
     /**
-     * 清空功能牌區域 (保留「不使用」按鈕)
+     * 清空機會牌區域 (保留「不使用」按鈕)
      */
     public void clearFunctionCards() {
-        // 移除功能牌面板，但保留 skip 按鈕
+        // 移除機會牌面板，但保留 skip 按鈕
         for (int i = functionCardArea.getComponentCount() - 1; i >= 0; i--) {
             Component comp = functionCardArea.getComponent(i);
             if (comp instanceof FunctionCardPanel) {
@@ -337,7 +337,7 @@ public class GamePanel extends JPanel {
     }
 
     /**
-     * 設定所有功能牌按鈕是否可用
+     * 設定所有機會牌按鈕是否可用
      */
     public void setFunctionCardsEnabled(boolean enabled) {
         for (Component comp : functionCardArea.getComponents()) {

@@ -1,8 +1,8 @@
-# Blackjack 21點遊戲 - Agent 指南
+# 21點：博弈紛爭 - Agent 指南
 
 ## 專案概述
 
-21點 PVP 對戰遊戲，支援單人練習 (PVE) 和多人對戰 (PVP) 模式。
+21點：博弈紛爭 - 支援單人練習 (PVE) 和多人對戰 (PVP) 模式的對戰遊戲。
 採用 Java Socket 實作 Client-Server 架構。
 
 ## 目錄結構

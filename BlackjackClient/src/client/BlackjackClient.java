@@ -24,7 +24,7 @@ public class BlackjackClient extends JFrame {
     private boolean isPveMode = false;
 
     public BlackjackClient() {
-        setTitle("Blackjack 21點: 絕地求生版");
+        setTitle("21點：博弈紛爭");
         setSize(1000, 750);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -82,7 +82,7 @@ public class BlackjackClient extends JFrame {
 
         gamePanel.getLeaveButton().addActionListener(e -> networkClient.send(Protocol.LEAVE));
 
-        // 不使用機會卡按鈕
+        // 不使用機會牌按鈕
         gamePanel.getSkipFunctionCardButton().addActionListener(e -> networkClient.send(Protocol.SKIP_FUNCTION_CARD));
 
         // 聊天
@@ -156,10 +156,10 @@ public class BlackjackClient extends JFrame {
         }
     }
 
-    // ==================== 功能牌相關 ====================
+    // ==================== 機會牌相關 ====================
 
     /**
-     * 更新功能牌 UI
+     * 更新機會牌 UI
      * 
      * @param cardsData 格式: id,type;id,type;...
      */
@@ -194,10 +194,10 @@ public class BlackjackClient extends JFrame {
     }
 
     /**
-     * 使用功能牌
+     * 使用機會牌
      */
     private void useFunctionCard(int cardId, String cardType) {
-        // 根據功能牌類型決定如何選擇目標
+        // 根據機會牌類型決定如何選擇目標
         if ("MAKE_A_DEAL".equals(cardType)) {
             // 需要選擇目標玩家
             String targetUid = promptSelectPlayer();
@@ -206,7 +206,7 @@ public class BlackjackClient extends JFrame {
                         Protocol.USE_FUNCTION_CARD + Protocol.DELIMITER + cardId + Protocol.DELIMITER + targetUid);
             }
         } else {
-            // 其他功能牌可能不需要目標
+            // 其他機會牌可能不需要目標
             networkClient.send(Protocol.USE_FUNCTION_CARD + Protocol.DELIMITER + cardId + Protocol.DELIMITER + "");
         }
     }

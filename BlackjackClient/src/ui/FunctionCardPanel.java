@@ -2,8 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * 功能牌 UI 面板
- * 顯示單張功能牌的資訊和使用按鈕
+ * 機會牌 UI 面板
+ * 顯示單張機會牌的資訊和使用按鈕
  */
 public class FunctionCardPanel extends JPanel {
     private final int cardId;
@@ -12,7 +12,7 @@ public class FunctionCardPanel extends JPanel {
     private final String description;
     private final JButton useButton;
 
-    // 功能牌類型對應顯示名稱和描述
+    // 機會牌類型對應顯示名稱和描述
     private static String getDisplayName(String type) {
         switch (type) {
             case "MAKE_A_DEAL":
@@ -81,7 +81,7 @@ public class FunctionCardPanel extends JPanel {
     }
 
     /**
-     * 從協定字串創建功能牌面板
+     * 從協定字串創建機會牌面板
      * 格式: id,TYPE_NAME
      */
     public static FunctionCardPanel fromProtocol(String data) {

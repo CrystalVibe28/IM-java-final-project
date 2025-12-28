@@ -19,13 +19,13 @@ public class BlackjackServer {
      * 啟動伺服器
      */
     public void start() {
-        System.out.println("=== Blackjack Server (PVP 莊家消極懲罰版) Port: " + port + " ===");
-        
+        System.out.println("=== 21點：博弈紛爭 伺服器 Port: " + port + " ===");
+
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             while (true) {
                 Socket socket = serverSocket.accept();
                 System.out.println("新連線: " + socket.getInetAddress().getHostAddress());
-                
+
                 ClientHandler client = new ClientHandler(socket, rooms);
                 new Thread(client).start();
             }
