@@ -224,7 +224,7 @@ public class BlackjackClient extends JFrame {
         for (String line : listText.split("\n")) {
             if (line.isEmpty())
                 continue;
-            // 格式: Name(莊):15HP 或 Name:15HP
+            // 格式: Name(莊):10HP 或 Name:10HP
             String name = line.split(":")[0].replace("(莊)", "").replace("(旁觀)", "").trim();
             if (!name.equals(playerName) && !name.isEmpty()) {
                 otherPlayers.add(name);
